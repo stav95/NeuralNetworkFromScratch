@@ -1,9 +1,13 @@
-from layer import Layer_Input
+from activation_and_loss.activation_softmax_loss_categorical_crossentropy import \
+    Activation_Softmax_Loss_CategoricalCrossentropy
+from layers.layer import Layer_Input
 from activation_functions.softmax import Activation_Softmax
-
 
 # Model class
 # noinspection PyPep8Naming
+from losses.loss_categorical_crossentropy import Loss_CategoricalCrossentropy
+
+
 class Model:
 
     def __init__(self):
@@ -16,7 +20,7 @@ class Model:
     def add(self, layer):
         self.layers.append(layer)
 
-    # Set loss, optimizer and accuracy
+    # Set loss, optimizer and accuracies
     def set(self, *, loss, optimizer, accuracy):
         self.loss = loss
         self.optimizer = optimizer
@@ -74,18 +78,16 @@ class Model:
         # create an object of combined activation
         # and loss function containing
         # faster gradient calculation
-        if isinstance(self.layers[-1], Activation_Softmax) and \
-                isinstance(self.loss, Loss_CategoricalCrossentropy):
+        if isinstance(self.layers[-1], Activation_Softmax) and isinstance(self.loss, Loss_CategoricalCrossentropy):
             # Create an object of combined activation
             # and loss functions
-            self.softmax_classifier_output = \
-                Activation_Softmax_Loss_CategoricalCrossentropy()
+            self.softmax_classifier_output = Activation_Softmax_Loss_CategoricalCrossentropy()
 
     # Train the model
     def train(self, X, y, *, epochs=1, batch_size=None,
               print_every=1, validation_data=None):
 
-        # Initialize accuracy object
+        # Initialize accuracies object
         self.accuracy.init(y)
 
         # Default value if batch size is not being set
@@ -109,6 +111,7 @@ class Model:
                 train_steps += 1
 
             if validation_data is not None:
+                assert X_val
                 validation_steps = len(X_val) // batch_size
 
                 # Dividing rounds down. If there are some remaining
@@ -123,7 +126,7 @@ class Model:
             # Print epoch number
             print(f'epoch: {epoch}')
 
-            # Reset accumulated values in loss and accuracy objects
+            # Reset accumulated values in loss and accuracies objects
             self.loss.new_pass()
             self.accuracy.new_pass()
 
@@ -150,7 +153,7 @@ class Model:
                                         include_regularization=True)
                 loss = data_loss + regularization_loss
 
-                # Get predictions and calculate an accuracy
+                # Get predictions and calculate an accuracies
                 predictions = self.output_layer_activation.predictions(
                     output)
                 accuracy = self.accuracy.calculate(predictions,
@@ -174,7 +177,7 @@ class Model:
                           f'reg_loss: {regularization_loss:.3f}), ' +
                           f'lr: {self.optimizer.current_learning_rate}')
 
-            # Get and print epoch loss and accuracy
+            # Get and print epoch loss and accuracies
             epoch_data_loss, epoch_regularization_loss = \
                 self.loss.calculate_accumulated(
                     include_regularization=True)
@@ -192,7 +195,7 @@ class Model:
             if validation_data is not None:
 
                 # Reset accumulated values in loss
-                # and accuracy objects
+                # and accuracies objects
                 self.loss.new_pass()
                 self.accuracy.new_pass()
 
@@ -221,12 +224,12 @@ class Model:
                     # Calculate the loss
                     self.loss.calculate(output, batch_y)
 
-                    # Get predictions and calculate an accuracy
+                    # Get predictions and calculate an accuracies
                     predictions = self.output_layer_activation.predictions(
                         output)
                     self.accuracy.calculate(predictions, batch_y)
 
-                # Get and print validation loss and accuracy
+                # Get and print validation loss and accuracies
                 validation_loss = self.loss.calculate_accumulated()
                 validation_accuracy = self.accuracy.calculate_accumulated()
 
