@@ -11,10 +11,10 @@ class Accuracy_Regression(Accuracy):
 
     # Calculates precision value
     # based on passed-in ground truth values
-    def init(self, y, reinit=False):
+    def init(self, y: np.ndarray, reinit: bool = False):
         if self.precision is None or reinit:
             self.precision = np.std(y) / 250
 
     # Compares predictions to the ground truth values
-    def compare(self, predictions, y):
+    def compare(self, predictions: np.ndarray, y: np.ndarray):
         return np.absolute(predictions - y) < self.precision
