@@ -6,14 +6,14 @@ import numpy as np
 class Activation_ReLU:
 
     # Forward pass
-    def forward(self, inputs, training):
+    def forward(self, inputs: np.ndarray, training: bool):
         # Remember input values
         self.inputs = inputs
         # Calculate output values from inputs
         self.output = np.maximum(0, inputs)
 
     # Backward pass
-    def backward(self, dvalues):
+    def backward(self, dvalues: np.ndarray):
         # Since we need to modify original variable,
         # let's make a copy of values first
         self.dinputs = dvalues.copy()

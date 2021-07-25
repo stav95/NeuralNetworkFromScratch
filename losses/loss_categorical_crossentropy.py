@@ -7,10 +7,11 @@ from losses.loss import Loss
 class Loss_CategoricalCrossentropy(Loss):
 
     # Forward pass
-    def forward(self, y_pred, y_true):
+    def forward(self, y_pred: np.ndarray, y_true: np.ndarray) -> np.ndarray:
+        correct_confidences = None
 
         # Number of samples in a batch
-        samples = len(y_pred)
+        samples = y_pred.shape[0]
 
         # Clip data to prevent division by 0
         # Clip both sides to not drag mean towards any value
@@ -19,19 +20,13 @@ class Loss_CategoricalCrossentropy(Loss):
         # Probabilities for target values -
         # only if categorical labels
         if len(y_true.shape) == 1:
-            correct_confidences = y_pred_clipped[
-                range(samples),
-                y_true
-            ]
+            correct_confidences = y_pred_clipped[np.arange(samples), y_true]
 
         # Mask values - only for one-hot encoded labels
         elif len(y_true.shape) == 2:
-            correct_confidences = np.sum(
-                y_pred_clipped * y_true,
-                axis=1
-            )
+            correct_confidences = np.sum(y_pred_clipped * y_true, axis=1)
 
-        assert correct_confidences
+        assert correct_confidences is not None
         # Losses
         negative_log_likelihoods = -np.log(correct_confidences)
         return negative_log_likelihoods

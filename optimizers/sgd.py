@@ -1,9 +1,10 @@
 import numpy as np
+from optimizers.optimizer import Optimizer
 
 
 # SGD optimizer
 # noinspection PyPep8Naming
-class Optimizer_SGD:
+class Optimizer_SGD(Optimizer):
 
     # Initialize optimizer - set settings,
     # learning rate of 1. is default for this optimizer

@@ -1,9 +1,10 @@
 import numpy as np
+from optimizers.optimizer import Optimizer
 
 
 # RMSprop optimizer
 # noinspection PyPep8Naming
-class Optimizer_RMSprop:
+class Optimizer_RMSprop(Optimizer):
 
     # Initialize optimizer - set settings
     def __init__(self, learning_rate=0.001, decay=0., epsilon=1e-7,

@@ -67,23 +67,20 @@ if __name__ == "__main__":
     model = Model()
 
     # Add layers
-    model.add(Layer_Dense(X_train.shape[1], 128))
-    model.add(Activation_ReLU())
-    model.add(Layer_Dense(128, 128))
-    model.add(Activation_ReLU())
-    model.add(Layer_Dense(128, 10))
-    model.add(Activation_Softmax())
+    model.add(layer=Layer_Dense(n_inputs=X_train.shape[1], n_neurons=128))
+    model.add(layer=Activation_ReLU())
+    model.add(layer=Layer_Dense(n_inputs=128, n_neurons=128))
+    model.add(layer=Activation_ReLU())
+    model.add(layer=Layer_Dense(n_inputs=128, n_neurons=10))
+    model.add(layer=Activation_Softmax())
 
     # Set loss, optimizer and accuracies objects
-    model.set(
-        loss=Loss_CategoricalCrossentropy(),
-        optimizer=Optimizer_Adam(decay=1e-3),
-        accuracy=Accuracy_Categorical()
-    )
+    model.set(loss=Loss_CategoricalCrossentropy(),
+              optimizer=Optimizer_Adam(decay=1e-3),
+              accuracy=Accuracy_Categorical())
 
     # Finalize the model
     model.finalize()
 
     # Train the model
-    model.train(X_train, y_train, validation_data=(X_test, y_test),
-                epochs=10, batch_size=128, print_every=100)
+    model.train(X=X_train, y=y_train, validation_data=(X_test, y_test), epochs=10, batch_size=128, print_every=100)

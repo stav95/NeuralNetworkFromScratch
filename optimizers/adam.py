@@ -1,13 +1,18 @@
 import numpy as np
+from optimizers.optimizer import Optimizer
 
 
 # Adam optimizer
 # noinspection PyPep8Naming
-class Optimizer_Adam:
+class Optimizer_Adam(Optimizer):
 
     # Initialize optimizer - set settings
-    def __init__(self, learning_rate=0.001, decay=0., epsilon=1e-7,
-                 beta_1=0.9, beta_2=0.999):
+    def __init__(self,
+                 learning_rate: float = 0.001,
+                 decay: float = 0.,
+                 epsilon: float = 1e-7,
+                 beta_1: float = 0.9,
+                 beta_2: float = 0.999):
         self.learning_rate = learning_rate
         self.current_learning_rate = learning_rate
         self.decay = decay
@@ -19,8 +24,7 @@ class Optimizer_Adam:
     # Call once before any parameter updates
     def pre_update_params(self):
         if self.decay:
-            self.current_learning_rate = self.learning_rate * \
-                                         (1. / (1. + self.decay * self.iterations))
+            self.current_learning_rate = self.learning_rate * (1. / (1. + self.decay * self.iterations))
 
     # Update parameters
     def update_params(self, layer):
@@ -54,7 +58,7 @@ class Optimizer_Adam:
                 np.sqrt(weight_cache_corrected) + self.epsilon)
 
         layer.biases += -self.current_learning_rate * bias_momentums_corrected / (
-                    np.sqrt(bias_cache_corrected) + self.epsilon)
+                np.sqrt(bias_cache_corrected) + self.epsilon)
 
     # Call once after any parameter updates
     def post_update_params(self):

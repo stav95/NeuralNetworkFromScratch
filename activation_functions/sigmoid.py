@@ -6,7 +6,7 @@ import numpy as np
 class Activation_Sigmoid:
 
     # Forward pass
-    def forward(self, inputs, training):
+    def forward(self, inputs: np.ndarray, training: bool):
         # Save input and calculate/save output
         # of the sigmoid function
         self.inputs = inputs

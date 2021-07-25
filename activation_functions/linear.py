@@ -1,9 +1,11 @@
+import numpy as np
+
 # Linear activation
 # noinspection PyPep8Naming
 class Activation_Linear:
 
     # Forward pass
-    def forward(self, inputs, training):
+    def forward(self, inputs: np.ndarray, training: bool):
         # Just remember values
         self.inputs = inputs
         self.output = inputs
