@@ -5,7 +5,8 @@ import numpy as np
 from accuracies.accuracy import Accuracy
 from activation_and_loss.activation_softmax_loss_categorical_crossentropy import \
     Activation_Softmax_Loss_CategoricalCrossentropy
-from layers.layer import Layer_Input
+from layers.layer import Layer
+from layers.layer_input import Layer_Input
 from activation_functions.softmax import Activation_Softmax
 
 # Model class
@@ -14,8 +15,10 @@ from layers.layer_dense import Layer_Dense
 from losses.loss import Loss
 from losses.loss_categorical_crossentropy import Loss_CategoricalCrossentropy
 from optimizers.optimizer import Optimizer
+import matplotlib.pyplot as plt
 
 
+# noinspection PyUnboundLocalVariable,PyPep8Naming
 class Model:
     def __init__(self):
         # Create a list of network objects
@@ -24,7 +27,7 @@ class Model:
         self.softmax_classifier_output = None
 
     # Add objects to the model
-    def add(self, layer):
+    def add(self, layer: Layer):
         """
         :param layer: Layer_Dense or Activation Function
         :return: None
@@ -45,25 +48,26 @@ class Model:
         # Count all the objects
         layer_count = len(self.layers)
 
+        layers: List[Layer] = self.layers
         # Iterate the objects
         for i in range(layer_count):
             # If it's the first layer,
             # the previous layer object is the input layer
             if i == 0:
-                self.layers[i].prev = self.input_layer
-                self.layers[i].next = self.layers[i + 1]
+                layers[i].prev = self.input_layer
+                layers[i].next = self.layers[i + 1]
 
             # All layers except for the first and the last
             elif i < layer_count - 1:
-                self.layers[i].prev = self.layers[i - 1]
-                self.layers[i].next = self.layers[i + 1]
+                layers[i].prev = self.layers[i - 1]
+                layers[i].next = self.layers[i + 1]
 
             # The last layer - the next object is the loss
             # Also let's save aside the reference to the last object
             # whose output is the model's output
             else:
-                self.layers[i].prev = self.layers[i - 1]
-                self.layers[i].next = self.loss
+                layers[i].prev = self.layers[i - 1]
+                layers[i].next = self.loss
                 self.output_layer_activation = self.layers[i]
 
         self.trainable_layers: List[Layer_Dense] = [_ for _ in self.layers if isinstance(_, Layer_Dense)]
@@ -91,7 +95,7 @@ class Model:
               validation_data=None):
 
         # Initialize accuracies object
-        self.accuracy.init(y)
+        # self.accuracy.init(y)
 
         # Default value if batch size is not being set
         train_steps = 1
@@ -125,6 +129,9 @@ class Model:
                 if validation_steps * batch_size < X_val.shape[0]:
                     validation_steps += 1
 
+        self.training_acc, self.val_acc = [], []
+        self.training_loss, self.val_loss = [], []
+
         # Main training loop
         for epoch in range(1, epochs + 1):
 
@@ -153,7 +160,7 @@ class Model:
                 batch_y: np.ndarray = batch_y
 
                 # Perform the forward pass
-                output = self.forward(X=batch_X, training=True)
+                output = self.forward(X=batch_X)
 
                 # Calculate loss
                 data_loss, regularization_loss = self.loss.calculate(output, batch_y, include_regularization=True)
@@ -169,7 +176,7 @@ class Model:
                 # Optimize (update parameters)
                 self.optimizer.pre_update_params()
                 for layer in self.trainable_layers:
-                    self.optimizer.update_params(layer)
+                    self.optimizer.update_params(layer=layer)
                 self.optimizer.post_update_params()
 
                 # Print a summary
@@ -192,6 +199,9 @@ class Model:
                   f'data_loss: {epoch_data_loss:.3f}, ' +
                   f'reg_loss: {epoch_regularization_loss:.3f}), ' +
                   f'lr: {self.optimizer.current_learning_rate}')
+
+            self.training_acc.append(epoch_accuracy)
+            self.training_loss.append(epoch_loss)
 
             # If there is the validation data
             if validation_data is not None:
@@ -216,7 +226,7 @@ class Model:
                         batch_y = y_val[step * batch_size:(step + 1) * batch_size]
 
                     # Perform the forward pass
-                    output = self.forward(batch_X, training=False)
+                    output = self.forward(X=batch_X)
 
                     # Calculate the loss
                     self.loss.calculate(output, batch_y)
@@ -234,18 +244,21 @@ class Model:
                       f'acc: {validation_accuracy:.3f}, ' +
                       f'loss: {validation_loss:.3f}')
 
+                self.val_acc.append(validation_accuracy)
+                self.val_loss.append(validation_loss)
+
     # Performs forward pass
-    def forward(self, X: np.ndarray, training: bool) -> np.ndarray:
+    def forward(self, X: np.ndarray) -> np.ndarray:
 
         # Call forward method on the input layer
         # this will set the output property that
         # the first layer in "prev" object is expecting
-        self.input_layer.forward(inputs=X, training=training)
+        self.input_layer.forward(inputs=X)
 
         # Call forward method of every object in a chain
         # Pass output of the previous object as a parameter
         for layer in self.layers:
-            layer.forward(layer.prev.output, training)
+            layer.forward(layer.prev.output)
 
         # "layer" is now the last object from the list,
         # return its output
@@ -284,3 +297,16 @@ class Model:
         # in reversed order passing dinputs as a parameter
         for layer in reversed(self.layers):
             layer.backward(layer.next.dinputs)
+
+    # Plot Model Results
+    def plot_model_results(self):
+        ndigits = 4
+        plt.plot(self.training_acc, label=f'Training Accuracy - {round(max(self.training_acc), ndigits)}')
+        plt.plot(self.training_loss, label=f'Training Loss - {round(min(self.training_loss), ndigits)}')
+        plt.legend()
+        plt.show()
+
+        plt.plot(self.val_acc, label=f'Validation Accuracy - {round(max(self.val_acc), ndigits)}')
+        plt.plot(self.val_loss, label=f'Validation Loss - {round(min(self.val_loss), ndigits)}')
+        plt.legend()
+        plt.show()

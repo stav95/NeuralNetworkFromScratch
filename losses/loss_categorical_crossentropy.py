@@ -32,7 +32,7 @@ class Loss_CategoricalCrossentropy(Loss):
         return negative_log_likelihoods
 
     # Backward pass
-    def backward(self, dvalues, y_true):
+    def backward(self, dvalues: np.ndarray, y_true: np.ndarray):
 
         # Number of samples
         samples = len(dvalues)

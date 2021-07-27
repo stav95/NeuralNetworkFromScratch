@@ -1,15 +1,19 @@
+import abc
 import numpy as np
 
 
 # Common accuracies class
 # noinspection PyPep8Naming
-class Accuracy:
+class Accuracy(metaclass=abc.ABCMeta):
+    @abc.abstractmethod
+    def compare(self, predictions: np.ndarray, y: np.ndarray) -> np.ndarray:
+        pass
 
     # Calculates an accuracies
     # given predictions and ground truth values
     def calculate(self, predictions: np.ndarray, y: np.ndarray) -> float:
         # Get comparison results
-        comparisons = self.compare(predictions, y)
+        comparisons = self.compare(predictions=predictions, y=y)
 
         # Calculate an accuracies
         accuracy = comparisons.mean()

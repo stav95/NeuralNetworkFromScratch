@@ -1,4 +1,6 @@
 import numpy as np
+
+from layers.layer_dense import Layer_Dense
 from optimizers.optimizer import Optimizer
 
 
@@ -8,11 +10,12 @@ class Optimizer_SGD(Optimizer):
 
     # Initialize optimizer - set settings,
     # learning rate of 1. is default for this optimizer
-    def __init__(self, learning_rate=1., decay=0., momentum=0.):
-        self.learning_rate = learning_rate
-        self.current_learning_rate = learning_rate
-        self.decay = decay
-        self.iterations = 0
+    def __init__(self,
+                 learning_rate: float = 1.,
+                 decay: float = 0.,
+                 momentum: float = 0.):
+        super().__init__(learning_rate=learning_rate, decay=decay)
+
         self.momentum = momentum
 
     # Call once before any parameter updates
@@ -21,7 +24,7 @@ class Optimizer_SGD(Optimizer):
             self.current_learning_rate = self.learning_rate * (1. / (1. + self.decay * self.iterations))
 
     # Update parameters
-    def update_params(self, layer):
+    def update_params(self, layer: Layer_Dense):
 
         # If we use momentum
         if self.momentum:

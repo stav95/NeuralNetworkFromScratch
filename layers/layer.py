@@ -1,10 +1,19 @@
-# Input "layer"
-# noinspection PyPep8Naming
+import abc
+
 import numpy as np
 
 
-class Layer_Input:
+class Layer(metaclass=abc.ABCMeta):
+    def __init__(self):
+        self.inputs: np.ndarray = np.array([])
+        self.output: np.ndarray = np.array([])
 
-    # Forward pass
-    def forward(self, inputs: np.ndarray, training: bool):
-        self.output = inputs
+        self.prev, self.next = None, None
+
+    @abc.abstractmethod
+    def forward(self, inputs: np.ndarray):
+        pass
+
+    @abc.abstractmethod
+    def backward(self, dvalues: np.ndarray):
+        pass

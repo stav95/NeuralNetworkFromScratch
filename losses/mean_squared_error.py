@@ -7,7 +7,7 @@ from losses.loss import Loss
 class Loss_MeanSquaredError(Loss):  # L2 loss
 
     # Forward pass
-    def forward(self, y_pred, y_true):
+    def forward(self, y_pred: np.ndarray, y_true: np.ndarray) -> np.ndarray:
         # Calculate loss
         sample_losses = np.mean(np.power(y_true - y_pred, 2), axis=-1)
 
@@ -15,7 +15,7 @@ class Loss_MeanSquaredError(Loss):  # L2 loss
         return sample_losses
 
     # Backward pass
-    def backward(self, dvalues, y_true):
+    def backward(self, dvalues: np.ndarray, y_true: np.ndarray):
         # Number of samples
         samples = len(dvalues)
         # Number of outputs in every sample

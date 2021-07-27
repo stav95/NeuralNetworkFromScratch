@@ -1,4 +1,6 @@
 import numpy as np
+
+from layers.layer_dense import Layer_Dense
 from optimizers.optimizer import Optimizer
 
 
@@ -7,12 +9,13 @@ from optimizers.optimizer import Optimizer
 class Optimizer_RMSprop(Optimizer):
 
     # Initialize optimizer - set settings
-    def __init__(self, learning_rate=0.001, decay=0., epsilon=1e-7,
-                 rho=0.9):
-        self.learning_rate = learning_rate
-        self.current_learning_rate = learning_rate
-        self.decay = decay
-        self.iterations = 0
+    def __init__(self,
+                 learning_rate: float = 0.001,
+                 decay: float = 0.,
+                 epsilon: float = 1e-7,
+                 rho: float = 0.9):
+        super().__init__(learning_rate=learning_rate, decay=decay)
+
         self.epsilon = epsilon
         self.rho = rho
 
@@ -22,7 +25,7 @@ class Optimizer_RMSprop(Optimizer):
             self.current_learning_rate = self.learning_rate * (1. / (1. + self.decay * self.iterations))
 
     # Update parameters
-    def update_params(self, layer):
+    def update_params(self, layer: Layer_Dense):
 
         # If layer does not contain cache arrays,
         # create them filled with zeros

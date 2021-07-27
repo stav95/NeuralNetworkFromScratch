@@ -16,6 +16,7 @@ nnfs.init()
 
 
 # Loads a MNIST dataset
+# noinspection PyPep8Naming
 def load_mnist_dataset(dataset: str, path: str) -> Tuple[np.ndarray, np.ndarray]:
     # Scan all the directories and create a list of labels
     labels = os.listdir(os.path.join(path, dataset))
@@ -40,6 +41,7 @@ def load_mnist_dataset(dataset: str, path: str) -> Tuple[np.ndarray, np.ndarray]
 
 
 # MNIST dataset (train + test)
+# noinspection PyPep8Naming,PyShadowingNames
 def create_data_mnist(path: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     # Load both sets separately
     X_train, y_train = load_mnist_dataset(dataset='train', path=path)
@@ -83,4 +85,5 @@ if __name__ == "__main__":
     model.finalize()
 
     # Train the model
-    model.train(X=X_train, y=y_train, validation_data=(X_test, y_test), epochs=10, batch_size=128, print_every=100)
+    model.train(X=X_train, y=y_train, validation_data=(X_test, y_test), epochs=12, batch_size=128, print_every=100)
+    model.plot_model_results()

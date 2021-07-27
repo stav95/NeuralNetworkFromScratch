@@ -1,25 +1,24 @@
 import numpy as np
 
-
 # Dropout
 # noinspection PyPep8Naming
-class Layer_Dropout:
+from layers.layer import Layer
+
+
+class Layer_Dropout(Layer):
 
     # Init
-    def __init__(self, rate):
+    def __init__(self, rate: float):
+        super().__init__()
+
         # Store rate, we invert it as for example for dropout
         # of 0.1 we need success rate of 0.9
         self.rate = 1 - rate
 
     # Forward pass
-    def forward(self, inputs, training):
+    def forward(self, inputs: np.ndarray):
         # Save input values
         self.inputs = inputs
-
-        # If not in the training mode - return values
-        if not training:
-            self.output = inputs.copy()
-            return
 
         # Generate and save scaled mask
         self.binary_mask = np.random.binomial(1, self.rate, size=inputs.shape) / self.rate
@@ -27,6 +26,6 @@ class Layer_Dropout:
         self.output = inputs * self.binary_mask
 
     # Backward pass
-    def backward(self, dvalues):
+    def backward(self, dvalues: np.ndarray):
         # Gradient on values
         self.dinputs = dvalues * self.binary_mask

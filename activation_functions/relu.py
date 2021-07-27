@@ -3,10 +3,13 @@ import numpy as np
 
 # ReLU activation
 # noinspection PyPep8Naming
-class Activation_ReLU:
+from activation_functions.activation_function import ActivationFunction
+
+
+class Activation_ReLU(ActivationFunction):
 
     # Forward pass
-    def forward(self, inputs: np.ndarray, training: bool):
+    def forward(self, inputs: np.ndarray):
         # Remember input values
         self.inputs = inputs
         # Calculate output values from inputs

@@ -7,7 +7,7 @@ from losses.loss import Loss
 class Loss_BinaryCrossentropy(Loss):
 
     # Forward pass
-    def forward(self, y_pred, y_true):
+    def forward(self, y_pred: np.ndarray, y_true: np.ndarray) -> np.ndarray:
         # Clip data to prevent division by 0
         # Clip both sides to not drag mean towards any value
         y_pred_clipped = np.clip(y_pred, 1e-7, 1 - 1e-7)
@@ -20,7 +20,7 @@ class Loss_BinaryCrossentropy(Loss):
         return sample_losses
 
     # Backward pass
-    def backward(self, dvalues, y_true):
+    def backward(self, dvalues: np.ndarray, y_true: np.ndarray):
         # Number of samples
         samples = len(dvalues)
         # Number of outputs in every sample

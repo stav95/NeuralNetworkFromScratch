@@ -6,7 +6,7 @@ from losses.loss import Loss
 # noinspection PyPep8Naming
 class Loss_MeanAbsoluteError(Loss):  # L1 loss
 
-    def forward(self, y_pred, y_true):
+    def forward(self, y_pred: np.ndarray, y_true: np.ndarray) -> np.ndarray:
         # Calculate loss
         sample_losses = np.mean(np.abs(y_true - y_pred), axis=-1)
 
@@ -14,7 +14,7 @@ class Loss_MeanAbsoluteError(Loss):  # L1 loss
         return sample_losses
 
     # Backward pass
-    def backward(self, dvalues, y_true):
+    def backward(self, dvalues: np.ndarray, y_true: np.ndarray):
         # Number of samples
         samples = len(dvalues)
         # Number of outputs in every sample

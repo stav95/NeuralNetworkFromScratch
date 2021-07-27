@@ -3,10 +3,13 @@ import numpy as np
 
 # Softmax activation
 # noinspection PyPep8Naming
-class Activation_Softmax:
+from activation_functions.activation_function import ActivationFunction
+
+
+class Activation_Softmax(ActivationFunction):
 
     # Forward pass
-    def forward(self, inputs: np.ndarray, training: bool):
+    def forward(self, inputs: np.ndarray):
         # Remember input values
         self.inputs = inputs
 
@@ -19,7 +22,7 @@ class Activation_Softmax:
         self.output = probabilities
 
     # Backward pass
-    def backward(self, dvalues):
+    def backward(self, dvalues: np.ndarray):
         # Create uninitialized array
         self.dinputs = np.empty_like(dvalues)
 

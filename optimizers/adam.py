@@ -1,4 +1,6 @@
 import numpy as np
+
+from layers.layer_dense import Layer_Dense
 from optimizers.optimizer import Optimizer
 
 
@@ -13,10 +15,8 @@ class Optimizer_Adam(Optimizer):
                  epsilon: float = 1e-7,
                  beta_1: float = 0.9,
                  beta_2: float = 0.999):
-        self.learning_rate = learning_rate
-        self.current_learning_rate = learning_rate
-        self.decay = decay
-        self.iterations = 0
+        super().__init__(learning_rate=learning_rate, decay=decay)
+
         self.epsilon = epsilon
         self.beta_1 = beta_1
         self.beta_2 = beta_2
@@ -27,7 +27,7 @@ class Optimizer_Adam(Optimizer):
             self.current_learning_rate = self.learning_rate * (1. / (1. + self.decay * self.iterations))
 
     # Update parameters
-    def update_params(self, layer):
+    def update_params(self, layer: Layer_Dense):
 
         # If layer does not contain cache arrays,
         # create them filled with zeros

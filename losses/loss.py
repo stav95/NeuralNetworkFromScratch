@@ -1,13 +1,23 @@
 from typing import List, Tuple
 
 import numpy as np
+import abc
 
 # Common loss class
 # noinspection PyPep8Naming
 from layers.layer_dense import Layer_Dense
 
 
-class Loss:
+class Loss(metaclass=abc.ABCMeta):
+
+    @abc.abstractmethod
+    def forward(self, y_pred: np.ndarray, y_true: np.ndarray) -> np.ndarray:
+        pass
+
+    @abc.abstractmethod
+    def backward(self, dvalues: np.ndarray, y_true: np.ndarray):
+        pass
+
     # Regularization loss calculation
     def regularization_loss(self) -> float:
 
