@@ -57,7 +57,6 @@ class Loss(metaclass=abc.ABCMeta):
     def calculate(self,
                   output: np.ndarray,
                   y: np.ndarray,
-                  *,
                   include_regularization: bool = False) -> Tuple[float, float]:
 
         # Calculate sample losses

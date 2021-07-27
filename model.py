@@ -163,12 +163,14 @@ class Model:
                 output = self.forward(X=batch_X)
 
                 # Calculate loss
-                data_loss, regularization_loss = self.loss.calculate(output, batch_y, include_regularization=True)
+                data_loss, regularization_loss = self.loss.calculate(output=output,
+                                                                     y=batch_y,
+                                                                     include_regularization=True)
                 loss = data_loss + regularization_loss
 
                 # Get predictions and calculate an accuracies
-                predictions = self.output_layer_activation.predictions(output)
-                accuracy = self.accuracy.calculate(predictions, batch_y)
+                predictions = self.output_layer_activation.predictions(outputs=output)
+                accuracy = self.accuracy.calculate(predictions=predictions, y=batch_y)
 
                 # Perform backward pass
                 self.backward(output=output, y=batch_y)
@@ -229,11 +231,11 @@ class Model:
                     output = self.forward(X=batch_X)
 
                     # Calculate the loss
-                    self.loss.calculate(output, batch_y)
+                    self.loss.calculate(output=output, y=batch_y)
 
                     # Get predictions and calculate an accuracies
-                    predictions = self.output_layer_activation.predictions(output)
-                    self.accuracy.calculate(predictions, batch_y)
+                    predictions = self.output_layer_activation.predictions(outputs=output)
+                    self.accuracy.calculate(predictions=predictions, y=batch_y)
 
                 # Get and print validation loss and accuracies
                 validation_loss = sum(self.loss.calculate_accumulated())
@@ -255,10 +257,11 @@ class Model:
         # the first layer in "prev" object is expecting
         self.input_layer.forward(inputs=X)
 
+        layers: List[Layer] = self.layers
         # Call forward method of every object in a chain
         # Pass output of the previous object as a parameter
-        for layer in self.layers:
-            layer.forward(layer.prev.output)
+        for layer in layers:
+            layer.forward(inputs=layer.prev.output)
 
         # "layer" is now the last object from the list,
         # return its output
@@ -280,23 +283,25 @@ class Model:
             # object, let's set dinputs in this object
             self.layers[-1].dinputs = self.softmax_classifier_output.dinputs
 
+            layers: List[Layer] = self.layers
             # Call backward method going through
             # all the objects but last
             # in reversed order passing dinputs as a parameter
-            for layer in reversed(self.layers[:-1]):
-                layer.backward(layer.next.dinputs)
+            for layer in reversed(layers[:-1]):
+                layer.backward(dvalues=layer.next.dinputs)
 
             return
 
         # First call backward method on the loss
         # this will set dinputs property that the last
         # layer will try to access shortly
-        self.loss.backward(output, y)
+        self.loss.backward(dvalues=output, y_true=y)
 
+        layers: List[Layer] = self.layers
         # Call backward method going through all the objects
         # in reversed order passing dinputs as a parameter
-        for layer in reversed(self.layers):
-            layer.backward(layer.next.dinputs)
+        for layer in reversed(layers):
+            layer.backward(dvalues=layer.next.dinputs)
 
     # Plot Model Results
     def plot_model_results(self):
