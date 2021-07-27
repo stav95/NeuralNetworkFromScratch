@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import numpy as np
 
 # Dense layer
@@ -26,6 +28,13 @@ class Layer_Dense(Layer):
         self.weight_regularizer_l2 = weight_regularizer_l2
         self.bias_regularizer_l1 = bias_regularizer_l1
         self.bias_regularizer_l2 = bias_regularizer_l2
+
+    def get_parameters(self) -> Tuple[np.ndarray, np.ndarray]:
+        return self.weights, self.biases
+
+    def set_parameters(self, weights: np.ndarray, biases: np.ndarray):
+        self.weights = weights
+        self.biases = biases
 
     # Forward pass
     def forward(self, inputs: np.ndarray):

@@ -1,6 +1,5 @@
 import numpy as np
 
-
 # Softmax activation
 # noinspection PyPep8Naming
 from activation_functions.activation_function import ActivationFunction
@@ -32,8 +31,7 @@ class Activation_Softmax(ActivationFunction):
             # Flatten output array
             single_output = single_output.reshape(-1, 1)
             # Calculate Jacobian matrix of the output
-            jacobian_matrix = np.diagflat(single_output) - \
-                              np.dot(single_output, single_output.T)
+            jacobian_matrix = np.diagflat(single_output) - np.dot(single_output, single_output.T)
             # Calculate sample-wise gradient
             # and add it to the array of sample gradients
             self.dinputs[index] = np.dot(jacobian_matrix,

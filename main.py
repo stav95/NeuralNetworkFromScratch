@@ -29,7 +29,7 @@ def load_mnist_dataset(dataset: str, path: str) -> Tuple[np.ndarray, np.ndarray]
     for label in labels:
         # And for each image in given folder
         files = os.listdir(os.path.join(path, dataset, label))
-        files = files[:int(len(files) * 0.1)]
+        # files = files[:int(len(files) * 0.1)]
         for file in files:
             img_path = os.path.join(path, dataset, label, file)
             # Read the image and append it and a label to the lists
@@ -51,6 +51,37 @@ def create_data_mnist(path: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np
     return X_train, y_train, X_test, y_test
 
 
+def create_model() -> Model:
+    # Instantiate the model
+    m = Model()
+
+    # Add layers
+    m.add(layer=Layer_Dense(n_inputs=X_train.shape[1], n_neurons=128))
+    m.add(layer=Activation_ReLU())
+    m.add(layer=Layer_Dense(n_inputs=128, n_neurons=128))
+    m.add(layer=Activation_ReLU())
+    m.add(layer=Layer_Dense(n_inputs=128, n_neurons=10))
+    m.add(layer=Activation_Softmax())
+
+    # Set loss, optimizer and accuracies objects
+    m.complie(optimizer=Optimizer_Adam(decay=1e-3),
+              loss=Loss_CategoricalCrossentropy(),
+              accuracy=Accuracy_Categorical())
+
+    return m
+
+
+def save_model_parameters(model: Model, filename: str):
+    model_parameters = model.get_parameters()
+    np.save(filename, model_parameters, allow_pickle=True)
+
+
+def load_model_parameters(model: Model, filename: str):
+    params = np.load(filename, allow_pickle=True)
+    parameters = [tuple(params[i]) for i in range(params.shape[0])]
+    model.set_parameters(parameters=parameters)
+
+
 if __name__ == "__main__":
     # Create dataset
     X_train, y_train, X_test, y_test = create_data_mnist(path='fashion_mnist_images')
@@ -64,26 +95,21 @@ if __name__ == "__main__":
     # Scale and reshape samples
     X_train = (X_train.reshape(X_train.shape[0], -1).astype(np.float32) - 127.5) / 127.5
     X_test = (X_test.reshape(X_test.shape[0], -1).astype(np.float32) - 127.5) / 127.5
+    #
+    model = create_model()
 
-    # Instantiate the model
-    model = Model()
-
-    # Add layers
-    model.add(layer=Layer_Dense(n_inputs=X_train.shape[1], n_neurons=128))
-    model.add(layer=Activation_ReLU())
-    model.add(layer=Layer_Dense(n_inputs=128, n_neurons=128))
-    model.add(layer=Activation_ReLU())
-    model.add(layer=Layer_Dense(n_inputs=128, n_neurons=10))
-    model.add(layer=Activation_Softmax())
-
-    # Set loss, optimizer and accuracies objects
-    model.set(loss=Loss_CategoricalCrossentropy(),
-              optimizer=Optimizer_Adam(decay=1e-3),
-              accuracy=Accuracy_Categorical())
-
-    # Finalize the model
-    model.finalize()
+    # load_model_parameters(model=model, filename='ready_model_100.npy')
 
     # Train the model
-    model.train(X=X_train, y=y_train, validation_data=(X_test, y_test), epochs=12, batch_size=128, print_every=100)
+    model.train(X=X_train,
+                y=y_train,
+                epochs=10,
+                batch_size=128,
+                validation_data=(X_test, y_test),
+                print_every=100)
+
+    save_model_parameters(model=model, filename='ready_model_10.npy')
+
+    # model.evaluate(X_val=X_test, y_val=y_test, batch_size=128, print_evaluation=True)
     model.plot_model_results()
+    model.plot_model_results(plot_training=True)

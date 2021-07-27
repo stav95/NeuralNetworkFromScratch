@@ -22,5 +22,4 @@ class Activation_Sigmoid(ActivationFunction):
 
     # Calculate predictions for outputs
     def predictions(self, outputs: np.ndarray):
-        a = (outputs > 0.5) * 1
         return (outputs > 0.5) * 1

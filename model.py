@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 import numpy as np
 
@@ -35,13 +35,11 @@ class Model:
         self.layers.append(layer)
 
     # Set loss, optimizer and accuracies
-    def set(self, *, loss: Loss, optimizer: Optimizer, accuracy: Accuracy):
-        self.loss = loss
+    def complie(self, optimizer: Optimizer, loss: Loss, accuracy: Accuracy):
         self.optimizer = optimizer
+        self.loss = loss
         self.accuracy = accuracy
 
-    # Finalize the model
-    def finalize(self):
         # Create and set the input layer
         self.input_layer = Layer_Input()
 
@@ -86,13 +84,13 @@ class Model:
             self.softmax_classifier_output = Activation_Softmax_Loss_CategoricalCrossentropy()
 
     # Train the model
-    def train(self, X: np.ndarray,
+    def train(self,
+              X: np.ndarray,
               y: np.ndarray,
-              *,
               epochs: int = 1,
-              batch_size=None,
-              print_every: int = 1,
-              validation_data=None):
+              batch_size: int = 0,
+              validation_data: Tuple[np.ndarray, np.ndarray] = None,
+              print_every: int = 1):
 
         # Initialize accuracies object
         # self.accuracy.init(y)
@@ -100,34 +98,14 @@ class Model:
         # Default value if batch size is not being set
         train_steps = 1
 
-        X_val, y_val = None, None
-
-        # If there is validation data passed,
-        # set default number of steps for validation as well
-        if validation_data is not None:
-            validation_steps = 1
-
-            # For better readability
-            X_val, y_val = validation_data
-
         # Calculate number of steps
-        if batch_size is not None:
+        if batch_size > 0:
             train_steps = X.shape[0] // batch_size
             # Dividing rounds down. If there are some remaining
             # data but not a full batch, this won't include it
             # Add `1` to include this not full batch
             if train_steps * batch_size < X.shape[0]:
                 train_steps += 1
-
-            if validation_data is not None:
-                assert X_val is not None
-                validation_steps = X_val.shape[0] // batch_size
-
-                # Dividing rounds down. If there are some remaining
-                # data but nor full batch, this won't include it
-                # Add `1` to include this not full batch
-                if validation_steps * batch_size < X_val.shape[0]:
-                    validation_steps += 1
 
         self.training_acc, self.val_acc = [], []
         self.training_loss, self.val_loss = [], []
@@ -147,7 +125,7 @@ class Model:
 
                 # If batch size is not set -
                 # train using one step and full dataset
-                if batch_size is None:
+                if batch_size == 0:
                     batch_X = X
                     batch_y = y
 
@@ -207,39 +185,7 @@ class Model:
 
             # If there is the validation data
             if validation_data is not None:
-
-                # Reset accumulated values in loss
-                # and accuracies objects
-                self.loss.new_pass()
-                self.accuracy.new_pass()
-
-                # Iterate over steps
-                for step in range(validation_steps):
-
-                    # If batch size is not set -
-                    # train using one step and full dataset
-                    if batch_size is None:
-                        batch_X = X_val
-                        batch_y = y_val
-
-                    # Otherwise slice a batch
-                    else:
-                        batch_X = X_val[step * batch_size:(step + 1) * batch_size]
-                        batch_y = y_val[step * batch_size:(step + 1) * batch_size]
-
-                    # Perform the forward pass
-                    output = self.forward(X=batch_X)
-
-                    # Calculate the loss
-                    self.loss.calculate(output=output, y=batch_y)
-
-                    # Get predictions and calculate an accuracies
-                    predictions = self.output_layer_activation.predictions(outputs=output)
-                    self.accuracy.calculate(predictions=predictions, y=batch_y)
-
-                # Get and print validation loss and accuracies
-                validation_loss = sum(self.loss.calculate_accumulated())
-                validation_accuracy = self.accuracy.calculate_accumulated()
+                validation_accuracy, validation_loss = self.evaluate(*validation_data, batch_size=batch_size)
 
                 # Print a summary
                 print(f'validation, ' +
@@ -303,15 +249,81 @@ class Model:
         for layer in reversed(layers):
             layer.backward(dvalues=layer.next.dinputs)
 
-    # Plot Model Results
-    def plot_model_results(self):
-        ndigits = 4
-        plt.plot(self.training_acc, label=f'Training Accuracy - {round(max(self.training_acc), ndigits)}')
-        plt.plot(self.training_loss, label=f'Training Loss - {round(min(self.training_loss), ndigits)}')
-        plt.legend()
-        plt.show()
+    def evaluate(self,
+                 X_val: np.ndarray,
+                 y_val: np.ndarray,
+                 batch_size: int = 0,
+                 print_evaluation: bool = False) -> Tuple[float, float]:
+        validation_steps = 1
+        # Calculate number of steps
+        if batch_size > 0:
+            validation_steps = X_val.shape[0] // batch_size
+        # Dividing rounds down. If there are some remaining
+        # data, but not a full batch, this won't include it
+        # Add `1` to include this not full minibatch
+        if validation_steps * batch_size < X_val.shape[0]:
+            validation_steps += 1
+        # Reset accumulated values in loss
+        # and accuracy objects
+        self.loss.new_pass()
+        self.accuracy.new_pass()
+        # Iterate over steps
+        for step in range(validation_steps):
+            # train using one step and full dataset
+            if batch_size == 0:
+                batch_X = X_val
+                batch_y = y_val
+            # Otherwise slice a batch
+            else:
+                batch_X = X_val[step * batch_size:(step + 1) * batch_size]
+                batch_y = y_val[step * batch_size:(step + 1) * batch_size]
+            # Perform the forward pass
+            output = self.forward(X=batch_X)
+            # Calculate the loss
+            self.loss.calculate(output=output, y=batch_y)
+            # Get predictions and calculate an accuracy
+            predictions = self.output_layer_activation.predictions(outputs=output)
+            self.accuracy.calculate(predictions=predictions, y=batch_y)
 
-        plt.plot(self.val_acc, label=f'Validation Accuracy - {round(max(self.val_acc), ndigits)}')
-        plt.plot(self.val_loss, label=f'Validation Loss - {round(min(self.val_loss), ndigits)}')
-        plt.legend()
-        plt.show()
+        validation_loss = sum(self.loss.calculate_accumulated())
+        validation_accuracy = self.accuracy.calculate_accumulated()
+
+        if not print_evaluation:
+            return validation_accuracy, validation_loss
+        # Print a summary
+        print(f'validation, ' +
+              f'acc: {validation_accuracy:.3f}, ' +
+              f'loss: {validation_loss:.3f}')
+
+    def get_parameters(self) -> List[Tuple[np.ndarray, np.ndarray]]:
+        # Create a list for parameters
+        parameters = []
+        # Iterable trainable layers and get their parameters
+        for layer in self.trainable_layers:
+            parameters.append(layer.get_parameters())
+        # Return a list
+        return parameters
+
+    def set_parameters(self, parameters: List[Tuple[np.ndarray, np.ndarray]]):
+
+        # Iterate over the parameters and layers
+        # and update each layers with each set of the parameters
+        for parameter_set, layer in zip(parameters, self.trainable_layers):
+            layer.set_parameters(*parameter_set)
+
+    # Plot Model Results
+    def plot_model_results(self, plot_training: bool = False):
+        ndigits = 4
+
+        if plot_training:
+            if hasattr(self, 'training_acc') and hasattr(self, 'training_loss'):
+                plt.plot(self.training_acc, label=f'Training Accuracy - {round(max(self.training_acc), ndigits)}')
+                plt.plot(self.training_loss, label=f'Training Loss - {round(min(self.training_loss), ndigits)}')
+                plt.legend()
+                plt.show()
+        else:
+            if hasattr(self, 'val_acc') and hasattr(self, 'val_loss'):
+                plt.plot(self.val_acc, label=f'Validation Accuracy - {round(max(self.val_acc), ndigits)}')
+                plt.plot(self.val_loss, label=f'Validation Loss - {round(min(self.val_loss), ndigits)}')
+                plt.legend()
+                plt.show()
