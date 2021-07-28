@@ -1,5 +1,4 @@
 import numpy as np
-import nnfs
 import os
 import cv2
 from typing import Tuple, List
@@ -12,42 +11,34 @@ from losses.loss_categorical_crossentropy import Loss_CategoricalCrossentropy
 from model import Model
 from optimizers.adam import Optimizer_Adam
 
-nnfs.init()
+import time
 
 
-# Loads a MNIST dataset
 # noinspection PyPep8Naming
-def load_mnist_dataset(dataset: str, path: str) -> Tuple[np.ndarray, np.ndarray]:
-    # Scan all the directories and create a list of labels
-    labels = os.listdir(os.path.join(path, dataset))
-
-    # Create lists for samples and labels
+def load_fashion_mnist_dataset(dataset: str, path: str) -> Tuple[np.ndarray, np.ndarray]:
     X: List[np.ndarray] = []
     y: List[str] = []
 
-    # For each label folder
-    for label in labels:
-        # And for each image in given folder
-        files = os.listdir(os.path.join(path, dataset, label))
-        # files = files[:int(len(files) * 0.1)]
-        for file in files:
-            img_path = os.path.join(path, dataset, label, file)
-            # Read the image and append it and a label to the lists
-            X.append(cv2.imread(img_path, cv2.IMREAD_UNCHANGED))
-            y.append(label)
+    labels = os.listdir(os.path.join(path, dataset))
 
-    # Convert the data to proper numpy arrays and return
+    for label in labels:
+        dir_path = os.path.join(path, dataset, label)
+        files_name = os.listdir(os.path.join(path, dataset, label))
+        files = [os.path.join(dir_path, file) for file in files_name]
+        files = files[: int(len(files) * 0.1)]
+
+        X += list(map(lambda f: cv2.imread(f, cv2.IMREAD_UNCHANGED), files))
+        y += [label] * len(files)
+
     return np.array(X), np.array(y).astype('uint8')
 
 
-# MNIST dataset (train + test)
 # noinspection PyPep8Naming,PyShadowingNames
-def create_data_mnist(path: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    # Load both sets separately
-    X_train, y_train = load_mnist_dataset(dataset='train', path=path)
-    X_test, y_test = load_mnist_dataset(dataset='test', path=path)
+def create_dataset_fashion_mnist(path: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    X_train, y_train = load_fashion_mnist_dataset(dataset='train', path=path)
+    X_test, y_test = load_fashion_mnist_dataset(dataset='test', path=path)
 
-    # And return all the data
+    # And return all the dataset
     return X_train, y_train, X_test, y_test
 
 
@@ -71,11 +62,13 @@ def create_model() -> Model:
     return m
 
 
+# noinspection PyShadowingNames
 def save_model_parameters(model: Model, filename: str):
     model_parameters = model.get_parameters()
     np.save(filename, model_parameters, allow_pickle=True)
 
 
+# noinspection PyShadowingNames
 def load_model_parameters(model: Model, filename: str):
     params = np.load(filename, allow_pickle=True)
     parameters = [tuple(params[i]) for i in range(params.shape[0])]
@@ -84,7 +77,7 @@ def load_model_parameters(model: Model, filename: str):
 
 if __name__ == "__main__":
     # Create dataset
-    X_train, y_train, X_test, y_test = create_data_mnist(path='fashion_mnist_images')
+    X_train, y_train, X_test, y_test = create_dataset_fashion_mnist(path='fashion_mnist_images')
 
     # Shuffle the training dataset
     keys = np.arange(y_train.shape[0])
@@ -108,7 +101,7 @@ if __name__ == "__main__":
                 validation_data=(X_test, y_test),
                 print_every=100)
 
-    save_model_parameters(model=model, filename='ready_model_10.npy')
+    # save_model_parameters(model=model, filename='ready_model_10.npy')
 
     # model.evaluate(X_val=X_test, y_val=y_test, batch_size=128, print_evaluation=True)
     model.plot_model_results()

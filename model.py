@@ -1,3 +1,4 @@
+import math
 from typing import List, Tuple
 
 import numpy as np
@@ -24,7 +25,9 @@ class Model:
         # Create a list of network objects
         self.layers = []
         # Softmax classifier's output object
-        self.softmax_classifier_output = None
+        # noinspection PyTypeChecker
+        self.softmax_classifier_output: Activation_Softmax_Loss_CategoricalCrossentropy = None
+        self.any_layer_has_regularizer = False
 
     # Add objects to the model
     def add(self, layer: Layer):
@@ -81,7 +84,14 @@ class Model:
         if isinstance(self.layers[-1], Activation_Softmax) and isinstance(self.loss, Loss_CategoricalCrossentropy):
             # Create an object of combined activation
             # and loss functions
-            self.softmax_classifier_output = Activation_Softmax_Loss_CategoricalCrossentropy()
+            # self.softmax_classifier_output = Activation_Softmax_Loss_CategoricalCrossentropy()
+            pass
+
+        for layer in self.trainable_layers:
+            if layer.weight_regularizer_l1 > 0 or layer.weight_regularizer_l2 > 0 \
+                    or layer.bias_regularizer_l1 > 0 or layer.bias_regularizer_l2 > 0:
+                self.any_layer_has_regularizer = True
+                break
 
     # Train the model
     def train(self,
@@ -92,44 +102,21 @@ class Model:
               validation_data: Tuple[np.ndarray, np.ndarray] = None,
               print_every: int = 1):
 
-        # Initialize accuracies object
-        # self.accuracy.init(y)
-
-        # Default value if batch size is not being set
-        train_steps = 1
-
-        # Calculate number of steps
-        if batch_size > 0:
-            train_steps = X.shape[0] // batch_size
-            # Dividing rounds down. If there are some remaining
-            # data but not a full batch, this won't include it
-            # Add `1` to include this not full batch
-            if train_steps * batch_size < X.shape[0]:
-                train_steps += 1
+        train_steps = math.ceil(X.shape[0] / batch_size) if batch_size > 0 else 1
 
         self.training_acc, self.val_acc = [], []
         self.training_loss, self.val_loss = [], []
 
-        # Main training loop
         for epoch in range(1, epochs + 1):
-
-            # Print epoch number
             print(f'epoch: {epoch}')
 
-            # Reset accumulated values in loss and accuracies objects
             self.loss.new_pass()
             self.accuracy.new_pass()
 
-            # Iterate over steps
             for step in range(train_steps):
-
-                # If batch size is not set -
-                # train using one step and full dataset
                 if batch_size == 0:
                     batch_X = X
                     batch_y = y
-
-                # Otherwise slice a batch
                 else:
                     batch_X = X[step * batch_size:(step + 1) * batch_size]
                     batch_y = y[step * batch_size:(step + 1) * batch_size]
@@ -141,9 +128,11 @@ class Model:
                 output = self.forward(X=batch_X)
 
                 # Calculate loss
-                data_loss, regularization_loss = self.loss.calculate(output=output,
-                                                                     y=batch_y,
-                                                                     include_regularization=True)
+                data_loss, regularization_loss = self.loss.calculate(
+                    output=output,
+                    y=batch_y,
+                    include_regularization=self.any_layer_has_regularizer)
+
                 loss = data_loss + regularization_loss
 
                 # Get predictions and calculate an accuracies
@@ -169,9 +158,10 @@ class Model:
                           f'lr: {self.optimizer.current_learning_rate}')
 
             # Get and print epoch loss and accuracies
-            epoch_data_loss, epoch_regularization_loss = self.loss.calculate_accumulated(include_regularization=True)
+            epoch_data_loss, epoch_regularization_loss = self.loss.calculate_accumulated_loss(
+                include_regularization=self.any_layer_has_regularizer)
             epoch_loss = epoch_data_loss + epoch_regularization_loss
-            epoch_accuracy = self.accuracy.calculate_accumulated()
+            epoch_accuracy = self.accuracy.calculate_accumulated_accuracy()
 
             print(f'training, ' +
                   f'acc: {epoch_accuracy:.3f}, ' +
@@ -220,8 +210,8 @@ class Model:
         if self.softmax_classifier_output is not None:
             # First call backward method
             # on the combined activation/loss
-            # this will set dinputs property
-            self.softmax_classifier_output.backward(output, y)
+            # this will set dinputs property)
+            self.softmax_classifier_output.backward(dvalues=output, y_true=y)
 
             # Since we'll not call backward method of the last layer
             # which is Softmax activation
@@ -285,8 +275,8 @@ class Model:
             predictions = self.output_layer_activation.predictions(outputs=output)
             self.accuracy.calculate(predictions=predictions, y=batch_y)
 
-        validation_loss = sum(self.loss.calculate_accumulated())
-        validation_accuracy = self.accuracy.calculate_accumulated()
+        validation_loss = sum(self.loss.calculate_accumulated_loss())
+        validation_accuracy = self.accuracy.calculate_accumulated_accuracy()
 
         if not print_evaluation:
             return validation_accuracy, validation_loss

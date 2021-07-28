@@ -21,6 +21,7 @@ class Loss_BinaryCrossentropy(Loss):
 
     # Backward pass
     def backward(self, dvalues: np.ndarray, y_true: np.ndarray):
+        # TODO: dvalues_clipped = super().backward(dvalues=dvalues, y_true=y_true)
         # Number of samples
         samples = len(dvalues)
         # Number of outputs in every sample

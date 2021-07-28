@@ -8,9 +8,6 @@ class Activation_Softmax_Loss_CategoricalCrossentropy:
 
     # Backward pass
     def backward(self, dvalues: np.ndarray, y_true: np.ndarray):
-        # Number of samples
-        samples = dvalues.shape[0]
-
         # If labels are one-hot encoded,
         # turn them into discrete values
         if len(y_true.shape) == 2:
@@ -19,6 +16,6 @@ class Activation_Softmax_Loss_CategoricalCrossentropy:
         # Copy so we can safely modify
         self.dinputs = dvalues.copy()
         # Calculate gradient
-        self.dinputs[np.arange(samples), y_true] -= 1
+        self.dinputs[np.arange(dvalues.shape[0]), y_true] -= 1
         # Normalize gradient
-        self.dinputs /= samples
+        self.dinputs /= dvalues.shape[0]
