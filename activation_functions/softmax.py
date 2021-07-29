@@ -1,26 +1,20 @@
 import numpy as np
-
-# Softmax activation
-# noinspection PyPep8Naming
 from activation_functions.activation_function import ActivationFunction
 
 
+# noinspection PyPep8Naming
 class Activation_Softmax(ActivationFunction):
-
-    # Forward pass
     def forward(self, inputs: np.ndarray):
-        # Remember input values
         self.inputs = inputs
 
         # Get unnormalized probabilities
+        # Substracting the max because we don't want to exp(very high number) --> inf --> error
         exp_values = np.exp(inputs - np.max(inputs, axis=1, keepdims=True))
 
-        # Normalize them for each sample
+        # Normalize
         probabilities = exp_values / np.sum(exp_values, axis=1, keepdims=True)
-
         self.output = probabilities
 
-    # Backward pass
     def backward(self, dvalues: np.ndarray):
         # Create uninitialized array
         self.dinputs = np.empty_like(dvalues)
@@ -29,12 +23,13 @@ class Activation_Softmax(ActivationFunction):
         for index, (single_output, single_dvalues) in enumerate(zip(self.output, dvalues)):
             # Flatten output array
             single_output = single_output.reshape(-1, 1)
+
             # Calculate Jacobian matrix of the output
             jacobian_matrix = np.diagflat(single_output) - np.dot(single_output, single_output.T)
+
             # Calculate sample-wise gradient
             # and add it to the array of sample gradients
             self.dinputs[index] = np.dot(jacobian_matrix, single_dvalues)
 
-    # Calculate predictions for outputs
     def predictions(self, outputs: np.ndarray) -> np.ndarray:
         return np.argmax(outputs, axis=1)

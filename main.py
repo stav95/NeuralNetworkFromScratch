@@ -1,8 +1,7 @@
 import numpy as np
-import os
 import cv2
+import os
 from typing import Tuple, List
-
 from accuracies.categorical import Accuracy_Categorical
 from activation_functions.relu import Activation_ReLU
 from activation_functions.softmax import Activation_Softmax
@@ -10,8 +9,6 @@ from layers.layer_dense import Layer_Dense
 from losses.loss_categorical_crossentropy import Loss_CategoricalCrossentropy
 from model import Model
 from optimizers.adam import Optimizer_Adam
-
-import time
 
 
 # noinspection PyPep8Naming
@@ -38,23 +35,19 @@ def create_dataset_fashion_mnist(path: str) -> Tuple[np.ndarray, np.ndarray, np.
     X_train, y_train = load_fashion_mnist_dataset(dataset='train', path=path)
     X_test, y_test = load_fashion_mnist_dataset(dataset='test', path=path)
 
-    # And return all the dataset
     return X_train, y_train, X_test, y_test
 
 
 def create_model() -> Model:
-    # Instantiate the model
     m = Model()
 
-    # Add layers
     m.add(layer=Layer_Dense(n_inputs=X_train.shape[1], n_neurons=128))
     m.add(layer=Activation_ReLU())
-    m.add(layer=Layer_Dense(n_inputs=128, n_neurons=128))
+    m.add(layer=Layer_Dense(n_inputs=128, n_neurons=256))
     m.add(layer=Activation_ReLU())
-    m.add(layer=Layer_Dense(n_inputs=128, n_neurons=10))
+    m.add(layer=Layer_Dense(n_inputs=256, n_neurons=10))
     m.add(layer=Activation_Softmax())
 
-    # Set loss, optimizer and accuracies objects
     m.complie(optimizer=Optimizer_Adam(decay=1e-3),
               loss=Loss_CategoricalCrossentropy(),
               accuracy=Accuracy_Categorical())
@@ -76,10 +69,8 @@ def load_model_parameters(model: Model, filename: str):
 
 
 if __name__ == "__main__":
-    # Create dataset
     X_train, y_train, X_test, y_test = create_dataset_fashion_mnist(path='fashion_mnist_images')
 
-    # Shuffle the training dataset
     keys = np.arange(y_train.shape[0])
     np.random.shuffle(keys)
     X_train = X_train[keys]
@@ -93,7 +84,6 @@ if __name__ == "__main__":
 
     # load_model_parameters(model=model, filename='ready_model_100.npy')
 
-    # Train the model
     model.train(X=X_train,
                 y=y_train,
                 epochs=10,
@@ -103,6 +93,8 @@ if __name__ == "__main__":
 
     # save_model_parameters(model=model, filename='ready_model_10.npy')
 
+    # params = model_parameters = model.get_parameters()
+    # [print(arr[0].shape, arr[1].shape) for arr in params]
     # model.evaluate(X_val=X_test, y_val=y_test, batch_size=128, print_evaluation=True)
-    model.plot_model_results()
-    model.plot_model_results(plot_training=True)
+    # model.plot_model_results()
+    # model.plot_model_results(plot_training=True)

@@ -1,14 +1,10 @@
 import numpy as np
-
 from layers.layer_dense import Layer_Dense
 from optimizers.optimizer import Optimizer
 
 
-# SGD optimizer
 # noinspection PyPep8Naming
 class Optimizer_SGD(Optimizer):
-
-    # Initialize optimizer - set settings,
     # learning rate of 1. is default for this optimizer
     def __init__(self,
                  learning_rate: float = 1.,
@@ -18,17 +14,13 @@ class Optimizer_SGD(Optimizer):
 
         self.momentum = momentum
 
-    # Call once before any parameter updates
     def pre_update_params(self):
         if self.decay:
             self.current_learning_rate = self.learning_rate * (1. / (1. + self.decay * self.iterations))
 
-    # Update parameters
     def update_params(self, layer: Layer_Dense):
-
         # If we use momentum
         if self.momentum:
-
             # If layer does not contain momentum arrays, create them
             # filled with zeros
             if not hasattr(layer, 'weight_momentums'):
@@ -45,9 +37,7 @@ class Optimizer_SGD(Optimizer):
             layer.weight_momentums = weight_updates
 
             # Build bias updates
-            bias_updates = \
-                self.momentum * layer.bias_momentums - \
-                self.current_learning_rate * layer.dbiases
+            bias_updates = self.momentum * layer.bias_momentums - self.current_learning_rate * layer.dbiases
             layer.bias_momentums = bias_updates
 
         # Vanilla SGD updates (as before momentum update)

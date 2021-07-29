@@ -1,35 +1,29 @@
-import math
-from typing import List, Tuple
-
 import numpy as np
-
+import math
+import matplotlib.pyplot as plt
+from typing import List, Tuple
 from accuracies.accuracy import Accuracy
-from activation_and_loss.activation_softmax_loss_categorical_crossentropy import \
-    Activation_Softmax_Loss_CategoricalCrossentropy
-from layers.layer import Layer
-from layers.layer_input import Layer_Input
 from activation_functions.softmax import Activation_Softmax
-
-# Model class
-# noinspection PyPep8Naming
+from layers.layer import Layer
 from layers.layer_dense import Layer_Dense
+from layers.layer_input import Layer_Input
 from losses.loss import Loss
 from losses.loss_categorical_crossentropy import Loss_CategoricalCrossentropy
 from optimizers.optimizer import Optimizer
-import matplotlib.pyplot as plt
+from activation_and_loss.activation_softmax_loss_categorical_crossentropy import \
+    Activation_Softmax_Loss_CategoricalCrossentropy
 
 
 # noinspection PyUnboundLocalVariable,PyPep8Naming
 class Model:
     def __init__(self):
-        # Create a list of network objects
         self.layers = []
+
         # Softmax classifier's output object
         # noinspection PyTypeChecker
         self.softmax_classifier_output: Activation_Softmax_Loss_CategoricalCrossentropy = None
         self.any_layer_has_regularizer = False
 
-    # Add objects to the model
     def add(self, layer: Layer):
         """
         :param layer: Layer_Dense or Activation Function
@@ -37,7 +31,6 @@ class Model:
         """
         self.layers.append(layer)
 
-    # Set loss, optimizer and accuracies
     def complie(self, optimizer: Optimizer, loss: Loss, accuracy: Accuracy):
         self.optimizer = optimizer
         self.loss = loss
@@ -93,7 +86,6 @@ class Model:
                 self.any_layer_has_regularizer = True
                 break
 
-    # Train the model
     def train(self,
               X: np.ndarray,
               y: np.ndarray,
@@ -185,7 +177,6 @@ class Model:
                 self.val_acc.append(validation_accuracy)
                 self.val_loss.append(validation_loss)
 
-    # Performs forward pass
     def forward(self, X: np.ndarray) -> np.ndarray:
 
         # Call forward method on the input layer
@@ -203,9 +194,7 @@ class Model:
         # return its output
         return self.layers[-1].output
 
-    # Performs backward pass
     def backward(self, output: np.ndarray, y: np.ndarray):
-
         # If softmax classifier
         if self.softmax_classifier_output is not None:
             # First call backward method

@@ -2,11 +2,8 @@ import numpy as np
 from losses.loss import Loss
 
 
-# Binary cross-entropy loss
 # noinspection PyPep8Naming
 class Loss_BinaryCrossentropy(Loss):
-
-    # Forward pass
     def forward(self, y_pred: np.ndarray, y_true: np.ndarray) -> np.ndarray:
         # Clip data to prevent division by 0
         # Clip both sides to not drag mean towards any value
@@ -16,10 +13,8 @@ class Loss_BinaryCrossentropy(Loss):
         sample_losses = -(y_true * np.log(y_pred_clipped) + (1 - y_true) * np.log(1 - y_pred_clipped))
         sample_losses = np.mean(sample_losses, axis=-1)
 
-        # Return losses
         return sample_losses
 
-    # Backward pass
     def backward(self, dvalues: np.ndarray, y_true: np.ndarray):
         # TODO: dvalues_clipped = super().backward(dvalues=dvalues, y_true=y_true)
         # Number of samples

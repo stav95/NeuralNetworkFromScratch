@@ -1,13 +1,10 @@
-from typing import List, Tuple
-
 import numpy as np
 import abc
-
-# Common loss class
-# noinspection PyPep8Naming
+from typing import List, Tuple
 from layers.layer_dense import Layer_Dense
 
 
+# noinspection PyPep8Naming
 class Loss(metaclass=abc.ABCMeta):
     def __init__(self):
         self.dinputs = np.empty([])
@@ -21,8 +18,7 @@ class Loss(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def backward(self, dvalues: np.ndarray, y_true: np.ndarray) -> np.ndarray:
-        # Clip data to prevent division by 0
-        return np.clip(dvalues, 1e-7, 1)
+        pass
 
     # Regularization loss calculation
     def regularization_loss(self) -> float:
@@ -53,7 +49,6 @@ class Loss(metaclass=abc.ABCMeta):
 
         return regularization_loss
 
-    # Set/remember trainable layers
     def remember_trainable_layers(self, trainable_layers: List[Layer_Dense]):
         self.trainable_layers = trainable_layers
 
@@ -94,7 +89,6 @@ class Loss(metaclass=abc.ABCMeta):
         # Return the data and regularization losses
         return data_loss, self.regularization_loss()
 
-    # Reset variables for accumulated loss
     def new_pass(self):
         self.accumulated_loss = 0
         self.accumulated_count = 0

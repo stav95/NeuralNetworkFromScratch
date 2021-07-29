@@ -1,16 +1,10 @@
-from typing import Tuple
-
 import numpy as np
-
-# Dense layer
-# noinspection PyPep8Naming
+from typing import Tuple
 from layers.layer import Layer
 
 
 # noinspection PyPep8Naming
 class Layer_Dense(Layer):
-
-    # Layer initialization
     def __init__(self,
                  n_inputs: int,
                  n_neurons: int,
@@ -23,6 +17,7 @@ class Layer_Dense(Layer):
         # Initialize weights and biases
         self.weights = 0.01 * np.random.randn(n_inputs, n_neurons)
         self.biases = np.zeros((1, n_neurons))
+
         # Set regularization strength
         self.weight_regularizer_l1 = weight_regularizer_l1
         self.weight_regularizer_l2 = weight_regularizer_l2
@@ -36,18 +31,17 @@ class Layer_Dense(Layer):
         self.weights = weights
         self.biases = biases
 
-    # Forward pass
     def forward(self, inputs: np.ndarray):
-        # Remember input values
         self.inputs = inputs
-        # Calculate output values from inputs, weights and biases
         self.output = np.dot(inputs, self.weights) + self.biases
 
-    # Backward pass
     def backward(self, dvalues: np.ndarray):
         # Gradients on parameters
         self.dweights = np.dot(self.inputs.T, dvalues)
         self.dbiases = np.sum(dvalues, axis=0, keepdims=True)
+
+        # Gradient on values
+        self.dinputs = np.dot(dvalues, self.weights.T)
 
         # Gradients on regularization
         # L1 on weights
@@ -66,6 +60,3 @@ class Layer_Dense(Layer):
         # L2 on biases
         if self.bias_regularizer_l2 > 0:
             self.dbiases += 2 * self.bias_regularizer_l2 * self.biases
-
-        # Gradient on values
-        self.dinputs = np.dot(dvalues, self.weights.T)

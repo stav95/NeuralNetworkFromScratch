@@ -2,10 +2,11 @@ import numpy as np
 from accuracies.accuracy import Accuracy
 
 
-# Accuracy calculation for classification model
 # noinspection PyPep8Naming
 class Accuracy_Categorical(Accuracy):
     def __init__(self, binary: bool = False):
+        super().__init__()
+
         self.binary = binary
 
     # Compares predictions to the ground truth values

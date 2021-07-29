@@ -1,13 +1,9 @@
 import numpy as np
-
-# Dropout
-# noinspection PyPep8Naming
 from layers.layer import Layer
 
 
+# noinspection PyPep8Naming
 class Layer_Dropout(Layer):
-
-    # Init
     def __init__(self, rate: float):
         super().__init__()
 
@@ -17,7 +13,6 @@ class Layer_Dropout(Layer):
 
     # Forward pass
     def forward(self, inputs: np.ndarray):
-        # Save input values
         self.inputs = inputs
 
         # Generate and save scaled mask
@@ -25,7 +20,5 @@ class Layer_Dropout(Layer):
         # Apply mask to output values
         self.output = inputs * self.binary_mask
 
-    # Backward pass
     def backward(self, dvalues: np.ndarray):
-        # Gradient on values
         self.dinputs = dvalues * self.binary_mask

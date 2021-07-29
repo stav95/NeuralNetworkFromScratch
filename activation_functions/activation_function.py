@@ -1,7 +1,5 @@
-import abc
-
 import numpy as np
-
+import abc
 from layers.layer import Layer
 
 

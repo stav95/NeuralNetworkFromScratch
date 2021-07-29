@@ -1,6 +1,5 @@
-import abc
-
 import numpy as np
+import abc
 
 
 class Layer(metaclass=abc.ABCMeta):

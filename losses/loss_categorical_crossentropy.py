@@ -2,11 +2,8 @@ import numpy as np
 from losses.loss import Loss
 
 
-# Cross-entropy loss
 # noinspection PyPep8Naming
 class Loss_CategoricalCrossentropy(Loss):
-
-    # Forward pass
     def forward(self, y_pred: np.ndarray, y_true: np.ndarray) -> np.ndarray:
         correct_confidences = None
 
@@ -23,9 +20,9 @@ class Loss_CategoricalCrossentropy(Loss):
 
         return -np.log(correct_confidences)  # Losses
 
-    # Backward pass
     def backward(self, dvalues: np.ndarray, y_true: np.ndarray):
-        dvalues_clipped = super().backward(dvalues=dvalues, y_true=y_true)
+        # Clip data to prevent division by 0
+        dvalues_clipped = np.clip(dvalues, 1e-7, 1)
 
         # If labels are sparse, turn them into one-hot vector
         if len(y_true.shape) == 1:

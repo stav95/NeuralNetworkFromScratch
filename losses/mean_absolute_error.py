@@ -2,18 +2,12 @@ import numpy as np
 from losses.loss import Loss
 
 
-# Mean Absolute Error loss
 # noinspection PyPep8Naming
 class Loss_MeanAbsoluteError(Loss):  # L1 loss
-
     def forward(self, y_pred: np.ndarray, y_true: np.ndarray) -> np.ndarray:
-        # Calculate loss
         sample_losses = np.mean(np.abs(y_true - y_pred), axis=-1)
-
-        # Return losses
         return sample_losses
 
-    # Backward pass
     def backward(self, dvalues: np.ndarray, y_true: np.ndarray):
         # TODO: dvalues_clipped = super().backward(dvalues=dvalues, y_true=y_true)
         # Number of samples
