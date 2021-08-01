@@ -5,7 +5,6 @@ from optimizers.optimizer import Optimizer
 
 # noinspection PyPep8Naming
 class Optimizer_SGD(Optimizer):
-    # learning rate of 1. is default for this optimizer
     def __init__(self,
                  learning_rate: float = 1.,
                  decay: float = 0.,
@@ -21,22 +20,13 @@ class Optimizer_SGD(Optimizer):
     def update_params(self, layer: Layer_Dense):
         # If we use momentum
         if self.momentum:
-            # If layer does not contain momentum arrays, create them
-            # filled with zeros
-            if not hasattr(layer, 'weight_momentums'):
-                layer.weight_momentums = np.zeros_like(layer.weights)
-
-                # If there is no momentum array for weights
-                # The array doesn't exist for biases yet either.
-                layer.bias_momentums = np.zeros_like(layer.biases)
+            layer.add_variables(add_cache=False, add_momentums=True)
 
             # Build weight updates with momentum - take previous
-            # updates multiplied by retain factor and update with
-            # current gradients
+            # updates multiplied by retain factor and update with current gradients
             weight_updates = self.momentum * layer.weight_momentums - self.current_learning_rate * layer.dweights
             layer.weight_momentums = weight_updates
 
-            # Build bias updates
             bias_updates = self.momentum * layer.bias_momentums - self.current_learning_rate * layer.dbiases
             layer.bias_momentums = bias_updates
 
@@ -45,8 +35,6 @@ class Optimizer_SGD(Optimizer):
             weight_updates = -self.current_learning_rate * layer.dweights
             bias_updates = -self.current_learning_rate * layer.dbiases
 
-        # Update weights and biases using either
-        # vanilla or momentum updates
         layer.weights += weight_updates
         layer.biases += bias_updates
 

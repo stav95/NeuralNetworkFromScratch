@@ -18,11 +18,7 @@ class Optimizer_Adagrad(Optimizer):
             self.current_learning_rate = self.learning_rate * (1. / (1. + self.decay * self.iterations))
 
     def update_params(self, layer: Layer_Dense):
-        # If layer does not contain cache arrays,
-        # create them filled with zeros
-        if not hasattr(layer, 'weight_cache'):
-            layer.weight_cache = np.zeros_like(layer.weights)
-            layer.bias_cache = np.zeros_like(layer.biases)
+        layer.add_variables(add_cache=True, add_momentums=False)
 
         # Update cache with squared current gradients
         layer.weight_cache += layer.dweights ** 2

@@ -24,6 +24,26 @@ class Layer_Dense(Layer):
         self.bias_regularizer_l1 = bias_regularizer_l1
         self.bias_regularizer_l2 = bias_regularizer_l2
 
+        self._add_variables = False
+
+    def add_variables(self, add_cache: bool, add_momentums: bool):
+        # This function needs to check only once per layer dense through all the training.
+        if self._add_variables:
+            return
+
+        # If layer does not contain cache arrays, create them filled with zeros
+        if add_cache:
+            if not hasattr(self, 'weight_cache'):
+                self.weight_momentums = np.zeros_like(self.weights)
+                self.weight_cache = np.zeros_like(self.weights)
+        # If layer does not contain momentums arrays, create them filled with zeros
+        if add_momentums:
+            if not hasattr(self, 'weight_momentums'):
+                self.bias_momentums = np.zeros_like(self.biases)
+                self.bias_cache = np.zeros_like(self.biases)
+
+        self._add_variables = True
+
     def get_parameters(self) -> Tuple[np.ndarray, np.ndarray]:
         return self.weights, self.biases
 
